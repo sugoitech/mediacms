@@ -1,12 +1,12 @@
 #!/bin/bash
 
-RANDOM_ADMIN_PASS=`python -c "import secrets;chars = 'abcdefghijklmnopqrstuvwxyz0123456789';print(''.join(secrets.choice(chars) for i in range(10)))"`
+RANDOM_ADMIN_PASS=$(python -c "import secrets;chars = 'abcdefghijklmnopqrstuvwxyz0123456789';print(''.join(secrets.choice(chars) for i in range(10)))")
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-$RANDOM_ADMIN_PASS}
 
 if [ X"$ENABLE_MIGRATIONS" = X"yes" ]; then
     echo "Running migrations service"
     python manage.py migrate
-    EXISTING_INSTALLATION=`echo "from users.models import User; print(User.objects.exists())" |python manage.py shell`
+    EXISTING_INSTALLATION=$(echo "from users.models import User; print(User.objects.exists())" |python manage.py shell)
     if [ "$EXISTING_INSTALLATION" = "True" ]; then
         echo "Loaddata has already run"
     else
@@ -17,11 +17,11 @@ if [ X"$ENABLE_MIGRATIONS" = X"yes" ]; then
     	# post_save, needs redis to succeed (ie. migrate depends on redis)
         DJANGO_SUPERUSER_PASSWORD=$ADMIN_PASSWORD python manage.py createsuperuser \
             --no-input \
-            --username=$ADMIN_USER \
-            --email=$ADMIN_EMAIL \
+            --username="$ADMIN_USER" \
+            --email="$ADMIN_EMAIL" \
             --database=default || true
         echo "Created admin user with password: $ADMIN_PASSWORD"
-
+        echo "PASSWORD: $ADMIN_PASSWORD" > passwd
     fi
     echo "RUNNING COLLECTSTATIC"
 
